@@ -57,9 +57,9 @@ class MainWindow(QMainWindow):
             config = self.config_tab.get_configuration()
             kmj_values, expert_data = self.experts_tab.get_expert_data()
 
-            results = self.calculator.calculate(config, kmj_values, expert_data)
+            results_text, results_data = self.calculator.calculate(config, kmj_values, expert_data)
 
-            self.results_tab.display_results(results)
+            self.results_tab.display_results(results_text, results_data)
             self.tabs.setCurrentIndex(2)
             self.statusBar().showMessage("Obliczenia zakończone pomyślnie")
 

@@ -11,14 +11,29 @@ class ReliabilityCalculator:
         alpha_ej_list, alpha_e = calculate_alpha_e(expert_data)
         ke_j_list, ke = calculate_Ke(expert_data)
 
-        results = self._build_results_text(km, alpha_k, alpha_e, alpha_ej_list, ke, ke_j_list)
+        results_text = self._build_results_text(km, alpha_k, alpha_e, alpha_ej_list, ke, ke_j_list)
 
         mode = config['mode']
-        results += self._calculate_mode_specific(mode, config, km, ke, alpha_e, alpha_k)
+        mode_results, mode_data = self._calculate_mode_specific(mode, config, km, ke, alpha_e, alpha_k)
+        results_text += mode_results
 
-        results += "\n" + "=" * 60 + "\n"
+        results_text += "\n" + "=" * 60 + "\n"
 
-        return results
+        results_data = {
+            'config': config,
+            'kmj_values': kmj_values,
+            'expert_data': expert_data,
+            'km': km,
+            'alpha_k': alpha_k,
+            'alpha_e': alpha_e,
+            'alpha_ej_list': alpha_ej_list,
+            'ke': ke,
+            'ke_j_list': ke_j_list,
+            'mode': mode,
+            'mode_specific': mode_data
+        }
+
+        return results_text, results_data
 
     def _build_results_text(self, km, alpha_k, alpha_e, alpha_ej_list, ke, ke_j_list):
         results = "=" * 60 + "\n"
@@ -45,37 +60,42 @@ class ReliabilityCalculator:
 
     def _calculate_mode_specific(self, mode, config, km, ke, alpha_e, alpha_k):
         results = ""
+        data = {}
 
         if mode == 0:
-            results += self._calculate_a0(config, alpha_e, alpha_k)
+            results, data = self._calculate_a0(config, alpha_e, alpha_k)
         elif mode == 1:
-            results += self._calculate_e_t0(config, km, ke)
+            results, data = self._calculate_e_t0(config, km, ke)
         elif mode == 2:
-            results += self._calculate_lambda_di(config, alpha_e)
+            results, data = self._calculate_lambda_di(config, alpha_e)
 
-        return results
+        return results, data
 
     def _calculate_a0(self, config, alpha_e, alpha_k):
         a_mean_str = config['a_mean']
         if a_mean_str:
             a_mean = float(a_mean_str)
             a0 = calculate_A0(a_mean, alpha_e, alpha_k)
-            return (f"\n4. ŚREDNI STRUMIEŃ USZKODZEŃ\n"
+            text = (f"\n4. ŚREDNI STRUMIEŃ USZKODZEŃ\n"
                    f"   Ā = {a_mean:.6e}\n"
                    f"   A0 ≤ {a0:.6e}\n")
+            data = {'a_mean': a_mean, 'a0': a0}
+            return text, data
         else:
-            return f"\n4. BRAK DANYCH dla Ā\n"
+            return f"\n4. BRAK DANYCH dla Ā\n", {}
 
     def _calculate_e_t0(self, config, km, ke):
         t_str = config['t_expected']
         if t_str:
             t_expected = float(t_str)
             e_t0 = calculate_E_T0(t_expected, km, ke)
-            return (f"\n4. OCZEKIWANY CZAS PRACY\n"
+            text = (f"\n4. OCZEKIWANY CZAS PRACY\n"
                    f"   E*(T) = {t_expected:.2f} h\n"
                    f"   E(T0) ≥ {e_t0:.2f} h\n")
+            data = {'t_expected': t_expected, 'e_t0': e_t0}
+            return text, data
         else:
-            return f"\n4. BRAK DANYCH dla t\n"
+            return f"\n4. BRAK DANYCH dla t\n", {}
 
     def _calculate_lambda_di(self, config, alpha_e):
         lambda_p_str = config['lambda_p']
@@ -84,9 +104,11 @@ class ReliabilityCalculator:
             ki_avg = 1.0 / alpha_e if alpha_e > 0 else 1.0
             alpha_i = 1.0 / ki_avg
             lambda_di = lambda_p * alpha_i
-            return (f"\n4. INTENSYWNOŚĆ USZKODZEŃ NOWYCH ELEMENTÓW\n"
+            text = (f"\n4. INTENSYWNOŚĆ USZKODZEŃ NOWYCH ELEMENTÓW\n"
                    f"   λp = {lambda_p:.6e}\n"
                    f"   αi = {alpha_i:.4f}\n"
                    f"   λdi = {lambda_di:.6e}\n")
+            data = {'lambda_p': lambda_p, 'alpha_i': alpha_i, 'lambda_di': lambda_di}
+            return text, data
         else:
-            return f"\n4. BRAK DANYCH dla λp\n"
+            return f"\n4. BRAK DANYCH dla λp\n", {}

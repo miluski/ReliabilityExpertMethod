@@ -1,11 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QFormLayout, QSpinBox, QLineEdit, QLabel, QComboBox, QPushButton
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGroupBox, QFormLayout,
+                             QSpinBox, QLineEdit, QLabel, QComboBox, QPushButton, QHBoxLayout)
 from PyQt5.QtCore import pyqtSignal
+
+from utils.data_generator import DataGenerator
+
 
 class ConfigurationTab(QWidget):
     form_generated = pyqtSignal()
 
     def __init__(self):
         super().__init__()
+        self.data_generator = DataGenerator()
         self.init_ui()
 
     def init_ui(self):
@@ -94,13 +99,34 @@ class ConfigurationTab(QWidget):
         layout.addWidget(prog_group)
 
     def _create_generate_button(self, layout):
+        buttons_layout = QHBoxLayout()
+
+        random_btn = QPushButton("🎲 Losuj parametry prognostyczne")
+        random_btn.clicked.connect(self.on_random_prognostic_data)
+        random_btn.setStyleSheet("background-color: #FF9800; color: white; padding: 10px; font-size: 14px;")
+        buttons_layout.addWidget(random_btn)
+
         generate_btn = QPushButton("Generuj formularze dla ekspertów")
         generate_btn.clicked.connect(self.on_generate_clicked)
         generate_btn.setStyleSheet("background-color: #4CAF50; color: white; padding: 10px; font-size: 14px;")
-        layout.addWidget(generate_btn)
+        buttons_layout.addWidget(generate_btn)
+
+        layout.addLayout(buttons_layout)
 
     def on_generate_clicked(self):
         self.form_generated.emit()
+
+    def on_random_prognostic_data(self):
+        """Generuj losowe dane prognostyczne na podstawie wybranego trybu"""
+        mode = self.mode_combo.currentIndex()
+
+        if mode == 0:
+            self.a_mean_input.setText(self.data_generator.generate_a_mean())
+            self.a_upper_input.setText(self.data_generator.generate_a_mean())
+        elif mode == 1:
+            self.t_expected_input.setText(str(self.data_generator.generate_t_expected()))
+        elif mode == 2:
+            self.lambda_p_input.setText(self.data_generator.generate_lambda_p())
 
     def get_configuration(self):
         return {

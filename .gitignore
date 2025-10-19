@@ -38,3 +38,4 @@ htmlcov/
 *.pdf
 .AppleDouble
 .LSOverride
+run_app.sh
