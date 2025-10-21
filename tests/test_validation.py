@@ -1,30 +1,47 @@
 import pytest
-from src.utils.data_validation import validate_expert_inputs, validate_module_weights
+from src.utils.data_validation import validate_positive_number, validate_percentage
 
-def test_validate_expert_inputs_valid():
-    valid_inputs = {
-        'Kmj': [1.2, 1.5, 1.3],
-        'Ng/N': [0.6, 0.2, 0.15, 0.05],
-        'Kg': [2, 4, 1, 1]
-    }
-    assert validate_expert_inputs(valid_inputs) == True
+def test_validate_positive_number_valid():
+    """Test walidacji liczby dodatniej - przypadek poprawny"""
+    result = validate_positive_number(5.5)
+    assert result == 5.5
 
-def test_validate_expert_inputs_invalid():
-    invalid_inputs = {
-        'Kmj': [1.2, -1.5, 1.3],
-        'Ng/N': [0.6, 0.2, 0.15, 0.05],
-        'Kg': [2, 4, 1, 1]
-    }
-    assert validate_expert_inputs(invalid_inputs) == False
+def test_validate_positive_number_string():
+    """Test walidacji liczby dodatniej z stringa"""
+    result = validate_positive_number("10.5")
+    assert result == 10.5
 
-def test_validate_module_weights_valid():
-    valid_weights = [10, 20, 30]
-    assert validate_module_weights(valid_weights) == True
+def test_validate_positive_number_zero():
+    """Test walidacji zera - powinien rzucić wyjątek"""
+    with pytest.raises(ValueError):
+        validate_positive_number(0)
 
-def test_validate_module_weights_invalid():
-    invalid_weights = [10, -20, 30]  
-    assert validate_module_weights(invalid_weights) == False
+def test_validate_positive_number_negative():
+    """Test walidacji liczby ujemnej - powinien rzucić wyjątek"""
+    with pytest.raises(ValueError):
+        validate_positive_number(-5)
 
-def test_validate_module_weights_empty():
-    empty_weights = []
-    assert validate_module_weights(empty_weights) == False
+def test_validate_percentage_valid():
+    """Test walidacji procentu - przypadek poprawny"""
+    result = validate_percentage(50.5)
+    assert result == 50.5
+
+def test_validate_percentage_zero():
+    """Test walidacji procentu - zero jest poprawne"""
+    result = validate_percentage(0)
+    assert result == 0
+
+def test_validate_percentage_hundred():
+    """Test walidacji procentu - 100 jest poprawne"""
+    result = validate_percentage(100)
+    assert result == 100
+
+def test_validate_percentage_over_hundred():
+    """Test walidacji procentu > 100 - powinien rzucić wyjątek"""
+    with pytest.raises(ValueError):
+        validate_percentage(101)
+
+def test_validate_percentage_negative():
+    """Test walidacji procentu ujemnego - powinien rzucić wyjątek"""
+    with pytest.raises(ValueError):
+        validate_percentage(-10)

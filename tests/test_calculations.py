@@ -6,14 +6,20 @@ class TestCalculations(unittest.TestCase):
 
     def test_calculate_alpha_k(self):
         Km_values = [1.3, 1.0, 1.2]
-        expected_alpha_k = 1 / (sum(Km_values) / len(Km_values))
-        self.assertAlmostEqual(calculate_alpha_k(Km_values), expected_alpha_k)
+        expected_Km = sum(Km_values) / len(Km_values)
+        expected_alpha_k = 1 / expected_Km
+        Km, alpha_k = calculate_alpha_k(Km_values)
+        self.assertAlmostEqual(Km, expected_Km)
+        self.assertAlmostEqual(alpha_k, expected_alpha_k)
 
     def test_calculate_alpha_e(self):
-        Ng_N_values = [0.6, 0.2, 0.15, 0.05]
-        Kg_values = [2, 4, 1, 1]
-        expected_alpha_e = sum((Ng / N) * (1 / Kg) for Ng, Kg in zip(Ng_N_values, Kg_values)) / len(Ng_N_values)
-        self.assertAlmostEqual(calculate_alpha_e(Ng_N_values, Kg_values), expected_alpha_e)
+        expert_data = [
+            [(0.6, 2), (0.2, 4), (0.15, 1), (0.05, 1)]
+        ]
+        expected_alpha_e = 0.55
+        alpha_ej_list, alpha_e = calculate_alpha_e(expert_data)
+        self.assertEqual(len(alpha_ej_list), 1)
+        self.assertAlmostEqual(alpha_e, expected_alpha_e)
 
     def test_calculate_A0(self):
         A_bar = 1.1e-5
